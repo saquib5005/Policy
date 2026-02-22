@@ -150,3 +150,49 @@ public class PolicyController {
         return "Policy deleted";
     }
 }
+
+---------
+
+package com.example.policy.controller;
+
+import com.example.policy.dto.PolicyView;
+import com.example.policy.entity.Policy;
+import com.example.policy.service.PolicyService;
+import com.example.policy.dto.PolicyRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.policy.repository.PolicyRepository;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/policies")
+public class PolicyController {
+
+    @Autowired
+    private PolicyService policyService;
+
+    @Autowired
+    private PolicyRepository policyRepository;
+
+    @PostMapping("/create")
+    public Policy createPolicy(@RequestBody PolicyRequest req) {
+        return policyService.issuePolicy(req);
+    }
+
+    @GetMapping
+    public List<Policy> getAllPolicies() {
+        return policyService.getAllPolicies();
+    }
+
+    @GetMapping("/read-only")
+    public List<Policy> getAllPoliciesForReadOnly() {
+        return policyRepository.findAll();
+    }
+
+    @GetMapping("/super-view")
+    public List<PolicyView> getSuperUserPolicies(@RequestHeader("userId") Long superUserId) {
+        return policyService.getSuperUserPolicies(superUserId);
+    }
+}
