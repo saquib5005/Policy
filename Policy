@@ -102,3 +102,51 @@ public class PolicyService {
         return policyRepository.findAll();
     }
 }
+
+
+------------
+
+
+
+package com.example.policy.controller;
+
+import com.example.policy.dto.PolicyRequest;
+import com.example.policy.entity.Policy;
+import com.example.policy.service.PolicyService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/policies")
+public class PolicyController {
+
+    @Autowired
+    private PolicyService policyService;
+
+    // SuperUser creates policy template
+    @PostMapping("/create")
+    public Policy createPolicy(@RequestBody PolicyRequest req) {
+        return policyService.createPolicy(req);
+    }
+
+    // View all policies
+    @GetMapping
+    public List<Policy> getAllPolicies() {
+        return policyService.getAllPolicies();
+    }
+
+    // Read-Only view all policies with metadata
+    @GetMapping("/read-only")
+    public List<Policy> getAllPoliciesForReadOnly() {
+        return policyService.getAllPolicies();
+    }
+
+    // Delete policy
+    @DeleteMapping("/{id}")
+    public String deletePolicy(@PathVariable Long id) {
+        policyService.deletePolicy(id);
+        return "Policy deleted";
+    }
+}
