@@ -1,3 +1,105 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Users Table -->
+    <changeSet id="001-users" author="you">
+        <createTable tableName="users">
+            <column name="user_id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)"/>
+            <column name="email" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="role" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Plans Table (SuperUser creates) -->
+    <changeSet id="002-plans" author="you">
+        <createTable tableName="plans">
+            <column name="plan_id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="plan_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="plan_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="premium_amount" type="DECIMAL(15,2)"/>
+            <column name="coverage_limit" type="DECIMAL(15,2)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Policies Table (User wizard) -->
+    <changeSet id="003-policies" author="you">
+        <createTable tableName="policies">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="plan_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="holder_name" type="VARCHAR(100)"/>
+            <column name="holder_dob" type="DATE"/>
+            <column name="holder_address" type="VARCHAR(255)"/>
+            <column name="income_source" type="VARCHAR(100)"/>
+            <column name="total_income" type="DECIMAL(15,2)"/>
+            <column name="tenure_years" type="INT"/>
+            <column name="premium_frequency" type="VARCHAR(20)"/>
+            <column name="insured_amount" type="DECIMAL(15,2)"/>
+            <column name="issuance_date" type="DATE"/>
+            <column name="maturity_date" type="DATE"/>
+            <column name="premium_amount" type="DECIMAL(15,2)"/>
+            <column name="maturity_amount" type="DECIMAL(15,2)"/>
+            <column name="nominees_json" type="TEXT"/>
+            <column name="approval_timestamp" type="TIMESTAMP"/>
+            <column name="approver_name" type="VARCHAR(100)"/>
+            <column name="assignment_details" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Claims Table -->
+    <changeSet id="004-claims" author="you">
+        <createTable tableName="claims">
+            <column name="claim_id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="policy_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="claim_type" type="VARCHAR(50)"/>
+            <column name="claim_amount" type="DECIMAL(15,2)"/>
+            <column name="claim_date" type="DATE"/>
+            <column name="status" type="VARCHAR(20)"/>
+            <column name="remarks" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
+
+
+------------
+
 <!-- Hardcoded 5 plans for SuperUser -->
 <changeSet id="011-plans-data" author="you">
     <insert tableName="plans">
@@ -36,46 +138,7 @@
     </insert>
 </changeSet>
 
--------
-<!-- Hardcoded 5 plans for SuperUser -->
-<changeSet id="011-plans-data" author="you">
-    <insert tableName="plans">
-        <column name="plan_name" value="Family Life Cover"/>
-        <column name="plan_type" value="Life Insurance"/>
-        <column name="premium_amount" value="12500"/>
-        <column name="coverage_limit" value="1500000"/>
-    </insert>
-
-    <insert tableName="plans">
-        <column name="plan_name" value="Health Protect"/>
-        <column name="plan_type" value="Health Insurance"/>
-        <column name="premium_amount" value="15000"/>
-        <column name="coverage_limit" value="500000"/>
-    </insert>
-
-    <insert tableName="plans">
-        <column name="plan_name" value="Property Guard"/>
-        <column name="plan_type" value="Property Insurance"/>
-        <column name="premium_amount" value="18000"/>
-        <column name="coverage_limit" value="1000000"/>
-    </insert>
-
-    <insert tableName="plans">
-        <column name="plan_name" value="Motor Safe"/>
-        <column name="plan_type" value="Motor Insurance"/>
-        <column name="premium_amount" value="12000"/>
-        <column name="coverage_limit" value="750000"/>
-    </insert>
-
-    <insert tableName="plans">
-        <column name="plan_name" value="Family Life Cover"/>
-        <column name="plan_type" value="Life Insurance"/>
-        <column name="premium_amount" value="25000"/>
-        <column name="coverage_limit" value="2000000"/>
-    </insert>
-</changeSet>
-
------------
+---------
 
 <!-- Hardcoded 3 user-issued policies with plan_id -->
 <changeSet id="010-policies-data" author="you">
@@ -142,3 +205,8 @@
         <column name="assignment_details" value="Assigned to Alice User"/>
     </insert>
 </changeSet>
+
+-
+
+
+
