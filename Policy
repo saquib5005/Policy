@@ -250,3 +250,11 @@ public class PolicyController {
         return policyService.getSuperUserPolicies(superUserId);
     }
 }
+
+-------
+
+ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new JavaTimeModule());  // Handles LocalDate
+    mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);  // No array format
+    String nomineesJson = mapper.writeValueAsString(nominees);
+    policy.setNomineesJson(nomineesJson);
