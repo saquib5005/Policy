@@ -63,3 +63,32 @@ public class PlanService {
   "premiumAmount": 45000,
   "coverageLimit": 1000000
 }
+
+----------
+
+package com.example.policy.controller;
+
+import com.example.policy.entity.Plan;
+import com.example.policy.service.PlanService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/plans")
+public class PlanController {
+
+    @Autowired
+    private PlanService planService;
+
+    @PostMapping("/create")
+    public Plan createPlan(@RequestBody Plan plan) {
+        return planService.createPlan(plan);
+    }
+
+    @GetMapping
+    public List<Plan> getAllPlans() {
+        return planService.getAllPlans();
+    }
+}
