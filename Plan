@@ -92,3 +92,64 @@ public class PlanController {
         return planService.getAllPlans();
     }
 }
+------
+
+package com.example.policy.dto;
+
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+@Data
+public class PolicyRequest {
+
+    private Long userId;
+
+    // Personal Details (Step a)
+    private PersonalDetails personalDetails;
+
+    // Income Details (Step b)
+    private IncomeDetails incomeDetails;
+
+    // Nominee Details (Step c – list for multiple)
+    private List<NomineeDetails> nomineeDetails;
+
+    // Policy Details (Step d)
+    private PolicyDetails policyDetails;
+
+    @Data
+    public static class PersonalDetails {
+        private String name;
+        private LocalDate dob;
+        private String address;
+    }
+
+    @Data
+    public static class IncomeDetails {
+        private String source;
+        private BigDecimal total;
+    }
+
+    @Data
+    public static class NomineeDetails {
+        private String name;
+        private String contactNumber;
+        private LocalDate dob;
+        private String relationship;
+        private Integer percentageStake;
+    }
+
+    @Data
+    public static class PolicyDetails {
+        private Long planId;
+        private String planName;
+        private String planType;
+        private BigDecimal coverageLimit;
+        private Integer tenureYears;
+        private String premiumFrequency;
+        private BigDecimal insuredAmount;
+        private LocalDate issuanceDate;
+    }
+}
