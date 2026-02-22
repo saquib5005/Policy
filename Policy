@@ -258,3 +258,18 @@ ObjectMapper mapper = new ObjectMapper();
     mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);  // No array format
     String nomineesJson = mapper.writeValueAsString(nominees);
     policy.setNomineesJson(nomineesJson);
+
+----------
+
+Optional<Plan> optPlan = planRepository.findById(req.getPlanId());
+        if (optPlan.isEmpty()) {
+            throw new RuntimeException("Selected plan not found");
+        }
+----
+Plan plan = optPlan.get();
+
+------
+// Fetch and set from selected plan
+        policy.setPlanName(plan.getPlanName());
+        policy.setPlanType(plan.getPlanType());
+        policy.setCoverageLimit(plan.getCoverageLimit());
