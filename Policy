@@ -5,3 +5,59 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PolicyRepository extends JpaRepository<Policy, Long> {
 }
+--------
+
+package com.example.policy.service;
+
+import com.example.policy.dto.PolicyRequest;
+import com.example.policy.entity.Policy;
+import com.example.policy.repository.PolicyRepository;
+import com.example.policy.repository.UserRepository;
+import com.example.policy.entity.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class PolicyService {
+
+    @Autowired
+    private PolicyRepository policyRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    public Policy issuePolicy(PolicyRequest req) {
+        Optional<User> optUser = userRepository.findById(req.getUserId());
+        if (optUser.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+
+        User user = optUser.get();
+
+        Policy policy = new Policy();
+        policy.setUserId(user.getId());
+        policy.setHolderName(req.getHolderName());
+        policy.setHolderDob(req.getHolderDob());
+        policy.setHolderAddress(req.getHolderAddress());
+        policy.setIncomeSource(req.getIncomeSource());
+        policy.setTotalIncome(req.getTotalIncome());
+        policy.setPlanName(req.getPlanName());
+        policy.setPlanType(req.getPlanType());
+        policy.setTenureYears(req.getTenureYears());
+        policy.setPremiumFrequency(req.getPremiumFrequency());
+        policy.setInsuredAmount(req.getInsuredAmount());
+        policy.setIssuanceDate(req.getIssuanceDate());
+        policy.setMaturityDate(req.getMaturityDate());
+        policy.setPremiumAmount(req.getPremiumAmount());
+        policy.setMaturityAmount(req.getMaturityAmount());
+
+        return policyRepository.save(policy);
+    }
+
+    public List<Policy> getAllPolicies() {
+        return policyRepository.findAll();
+    }
+}
