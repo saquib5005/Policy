@@ -1,24 +1,17 @@
-package com.example.policy.repository;
-
-import com.example.policy.entity.Policy;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface PolicyRepository extends JpaRepository<Policy, Long> {
-}
---------
-
 package com.example.policy.service;
 
 import com.example.policy.dto.PolicyRequest;
 import com.example.policy.entity.Policy;
+import com.example.policy.entity.User;
 import com.example.policy.repository.PolicyRepository;
 import com.example.policy.repository.UserRepository;
-import com.example.policy.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PolicyService {
@@ -38,21 +31,48 @@ public class PolicyService {
         User user = optUser.get();
 
         Policy policy = new Policy();
-        policy.setUserId(user.getId());
-        policy.setHolderName(req.getHolderName());
-        policy.setHolderDob(req.getHolderDob());
-        policy.setHolderAddress(req.getHolderAddress());
-        policy.setIncomeSource(req.getIncomeSource());
-        policy.setTotalIncome(req.getTotalIncome());
+        policy.setUser(user);
+
+        // Set fields from request (from wizard)
         policy.setPlanName(req.getPlanName());
         policy.setPlanType(req.getPlanType());
         policy.setTenureYears(req.getTenureYears());
         policy.setPremiumFrequency(req.getPremiumFrequency());
         policy.setInsuredAmount(req.getInsuredAmount());
         policy.setIssuanceDate(req.getIssuanceDate());
-        policy.setMaturityDate(req.getMaturityDate());
-        policy.setPremiumAmount(req.getPremiumAmount());
-        policy.setMaturityAmount(req.getMaturityAmount());
+        policy.setHolderName(req.getHolderName());
+        policy.setHolderDob(req.getHolderDob());
+        policy.setHolderAddress(req.getHolderAddress());
+        policy.setIncomeSource(req.getIncomeSource());
+        policy.setTotalIncome(req.getTotalIncome());
+
+        // Calculation 1: Maturity date (issuanceDate + tenureYears)
+        if (policy.getIssuanceDate() != null && policy.getTenureYears() != null) {
+            policy.setMaturityDate(policy.getIssuanceDate().plusYears(policy.getTenureYears()));
+        }
+
+        // Calculation 2: Premium (placeholder: insuredAmount * 0.05 / frequency factor)
+        if (policy.getInsuredAmount() != null && policy.getPremiumFrequency() != null) {
+            BigDecimal base = policy.getInsuredAmount().multiply(new BigDecimal("0.05"));
+            int frequencyFactor;
+            switch (policy.getPremiumFrequency().toLowerCase()) {
+                case "monthly" -> frequencyFactor = 12;
+                case "quarterly" -> frequencyFactor = 4;
+                case "half-yearly" -> frequencyFactor = 2;
+                case "yearly" -> frequencyFactor = 1;
+                default -> frequencyFactor = 1;  // Default to yearly
+            }
+            policy.setPremiumAmount(base.divide(new BigDecimal(frequencyFactor), 2, RoundingMode.HALF_UP));
+        }
+
+        // Calculation 3: Maturity amount (placeholder: insuredAmount * (1 + 0.05 * tenureYears))
+        if (policy.getInsuredAmount() != null && policy.getTenureYears() != null) {
+            BigDecimal maturity = policy.getInsuredAmount().multiply(BigDecimal.valueOf(1 + 0.05 * policy.getTenureYears()));
+            policy.setMaturityAmount(maturity);
+        }
+
+        // Nominees and metadata (from your previous code)
+        // ... (keep your existing code for nomineesJson, approvalTimestamp, etc.)
 
         return policyRepository.save(policy);
     }
