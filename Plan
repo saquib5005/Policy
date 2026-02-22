@@ -5,3 +5,26 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PlanRepository extends JpaRepository<Plan, Long> {
 }
+---------
+
+package com.example.policy.entity;
+
+import lombok.Data;
+import jakarta.persistence.*;
+
+@Data
+@Entity
+@Table(name = "plans")
+public class Plan {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "plan_id")
+    private Long planId;
+
+    private String planName;
+
+    private String planType;
+
+    private BigDecimal claimAmount;
+}
