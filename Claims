@@ -100,3 +100,14 @@ public class Claim {
         <column name="remarks" value="Vehicle damage claim after road accident"/>
     </insert>
 </changeSet>
+
+
+---------
+
+package com.example.policy.repository;
+
+import com.example.policy.entity.Claim;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ClaimRepository extends JpaRepository<Claim, Long> {
+}
