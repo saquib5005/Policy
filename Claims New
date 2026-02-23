@@ -457,3 +457,39 @@ public class ClaimService {
         return "Claim " + claimId + " rejected";
     }
 }
+
+-------
+
+package com.example.policy.dto;
+
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@Data
+public class ClaimResponse {
+
+    private Long claimId;
+    private Long policyId;
+    private String planName;
+    private BigDecimal insuredAmount;
+    private String claimType;
+    private BigDecimal claimAmount;
+    private LocalDate claimDate;
+    private String status;
+    private String remarks;
+
+    // Add this constructor to match the parameters in the call
+    public ClaimResponse(Long claimId, Long policyId, String planName, BigDecimal insuredAmount, String claimType, BigDecimal claimAmount, LocalDate claimDate, String status, String remarks) {
+        this.claimId = claimId;
+        this.policyId = policyId;
+        this.planName = planName;
+        this.insuredAmount = insuredAmount;
+        this.claimType = claimType;
+        this.claimAmount = claimAmount;
+        this.claimDate = claimDate;
+        this.status = status;
+        this.remarks = remarks;
+    }
+}
