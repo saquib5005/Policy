@@ -27,3 +27,76 @@ public class Claim {
 
     private String remarks;  // Reason of Claim
 }
+--------
+
+<!-- Claims Table -->
+<changeSet id="004-claims" author="you">
+    <createTable tableName="claims">
+        <column name="claim_id" type="BIGINT" autoIncrement="true">
+            <constraints primaryKey="true" nullable="false"/>
+        </column>
+        <column name="policy_id" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="claim_type" type="VARCHAR(50)"/>
+        <column name="claim_amount" type="DECIMAL(15,2)"/>
+        <column name="claim_date" type="DATE"/>
+        <column name="status" type="VARCHAR(20)"/>
+        <column name="remarks" type="VARCHAR(255)"/>
+    </createTable>
+</changeSet>
+
+-----------------------
+
+<!-- Hardcoded 5 claims -->
+<changeSet id="004-claims-data" author="you">
+    <!-- Claim 1: Pending (Accident) -->
+    <insert tableName="claims">
+        <column name="policy_id" value="1"/>
+        <column name="claim_type" value="Accident"/>
+        <column name="claim_amount" value="250000"/>
+        <column name="claim_date" value="2026-01-20"/>
+        <column name="status" value="Pending"/>
+        <column name="remarks" value="Minor Accident claim"/>
+    </insert>
+
+    <!-- Claim 2: Approved (Maturity) -->
+    <insert tableName="claims">
+        <column name="policy_id" value="2"/>
+        <column name="claim_type" value="Maturity"/>
+        <column name="claim_amount" value="800000"/>
+        <column name="claim_date" value="2026-02-05"/>
+        <column name="status" value="Approved"/>
+        <column name="remarks" value="Maturity Claim Approved"/>
+    </insert>
+
+    <!-- Claim 3: Rejected (Hospitalization) -->
+    <insert tableName="claims">
+        <column name="policy_id" value="3"/>
+        <column name="claim_type" value="Hospitalization"/>
+        <column name="claim_amount" value="50000"/>
+        <column name="claim_date" value="2026-02-09"/>
+        <column name="status" value="Rejected"/>
+        <column name="remarks" value="Rejected due to invalid documents"/>
+    </insert>
+
+    <!-- Claim 4: Pending (Health Insurance) -->
+    <insert tableName="claims">
+        <column name="policy_id" value="4"/>
+        <column name="claim_type" value="Health Insurance"/>
+        <column name="claim_amount" value="120000"/>
+        <column name="claim_date" value="2026-02-15"/>
+        <column name="status" value="Pending"/>
+        <column name="remarks" value="Hospitalization claim due to surgery"/>
+    </insert>
+
+    <!-- Claim 5: Pending (Motor Insurance) -->
+    <insert tableName="claims">
+        <column name="policy_id" value="5"/>
+        <column name="claim_type" value="Motor Insurance"/>
+        <column name="claim_amount" value="95000"/>
+        <column name="claim_date" value="2026-02-18"/>
+        <column name="status" value="Pending"/>
+        <column name="remarks" value="Vehicle damage claim after road accident"/>
+    </insert>
+</changeSet>
