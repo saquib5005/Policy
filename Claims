@@ -711,3 +711,75 @@ public class ClaimController {
     }
 }
 
+----------
+
+package com.example.policy.controller;
+
+import com.example.policy.entity.Claim;
+import com.example.policy.service.ClaimService;
+import com.example.policy.dto.ClaimResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/claims")
+public class ClaimController {
+
+    @Autowired
+    private ClaimService claimService;
+
+    @PostMapping("/submit")
+    public ClaimResponse submitClaim(@RequestBody Claim claim) {
+        try {
+            Claim savedClaim = claimService.submitClaim(claim);
+            return claimService.convertToResponse(savedClaim);
+        } catch (RuntimeException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @GetMapping("/retrieve")
+    public List<ClaimResponse> getAllClaims() {
+        return claimService.getAllClaims();
+    }
+
+    @GetMapping("/my")
+    public List<ClaimResponse> getMyClaims(@RequestHeader("userId") Long userId) {
+        return claimService.getMyClaims(userId);
+    }
+
+    @GetMapping("/pending")
+    public List<ClaimResponse> getPendingClaims() {
+        return claimService.getPendingClaims();
+    }
+
+    @PutMapping("/{claimId}/approve")
+    public ResponseEntity<String> approveClaim(@PathVariable Long claimId, @RequestBody(required = false) Map<String, String> body) {
+        try {
+            String remarks = (body != null) ? body.get("remarks") : null;
+            String message = claimService.approveClaim(claimId, remarks);
+            return ResponseEntity.ok(message);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{claimId}/reject")
+    public ResponseEntity<String> rejectClaim(@PathVariable Long claimId, @RequestBody(required = false) Map<String, String> body) {
+        try {
+            String remarks = (body != null) ? body.get("remarks") : null;
+            String message = claimService.rejectClaim(claimId, remarks);
+            return ResponseEntity.ok(message);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error " + e.getMessage());
+        }
+    }
+}
+
