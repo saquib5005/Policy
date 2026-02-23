@@ -27,3 +27,45 @@ public class Claim {
 
     private String remarks;  // Reason of Claim
 }
+
+-------
+
+<changeSet id="002-plans" author="you">
+<createTable tableName="plans">
+<column name="plan_id" type="BIGINT" autoIncrement="true">
+<constraints primaryKey="true" nullable="false"/>
+</column>
+<column name="plan_name" type="VARCHAR(100)"/>
+<column name="plan_type" type="VARCHAR(50)"/>
+<column name="coverage_limit" type="DECIMAL(15,2)"/>
+</createTable>
+</changeSet>
+
+----------
+<changeSet id="003-plans-data" author="you">
+<insert tableName="plans">
+<column name="plan_name" value="Life Secure Plus"/>
+<column name="plan_type" value="Life Insurance"/>
+<column name="coverage_limit" value="1500000"/>
+</insert>
+<insert tableName="plans">
+<column name="plan_name" value="Health Protect"/>
+<column name="plan_type" value="Health Insurance"/>
+<column name="coverage_limit" value="500000"/>
+</insert>
+<insert tableName="plans">
+<column name="plan_name" value="Property Guard"/>
+<column name="plan_type" value="Property Insurance"/>
+<column name="coverage_limit" value="1000000"/>
+</insert>
+<insert tableName="plans">
+<column name="plan_name" value="Motor Safe"/>
+<column name="plan_type" value="Motor Insurance"/>
+<column name="coverage_limit" value="750000"/>
+</insert>
+<insert tableName="plans">
+<column name="plan_name" value="Family Life Cover"/>
+<column name="plan_type" value="Life Insurance"/>
+<column name="coverage_limit" value="2000000"/>
+</insert>
+</changeSet>
