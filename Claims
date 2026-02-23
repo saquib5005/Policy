@@ -494,3 +494,220 @@ public class ClaimController {
     }
 }
 
+=====================================
+// ClaimResponse.java (DTO for claim responses, with all required fields)
+package com.example.policy.dto;
+
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@Data
+public class ClaimResponse {
+
+    private Long id;
+    private Long policyId;
+    private String planName;
+    private BigDecimal insuredAmount;
+    private String claimType;
+    private BigDecimal claimAmount;
+    private LocalDate claimDate;
+    private String status;
+    private String remarks;
+
+}
+
+=====================
+
+// ClaimService.java (Updated logic with Java Streams for mapping, fixed typos, and comprehensive methods)
+package com.example.policy.service;
+
+import com.example.policy.entity.Claim;
+import com.example.policy.dto.ClaimResponse;
+import com.example.policy.entity.Policy;
+import com.example.policy.repository.ClaimRepository;
+import com.example.policy.repository.PolicyRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class ClaimService {
+
+    @Autowired
+    private ClaimRepository claimRepository;
+
+    @Autowired
+    private PolicyRepository policyRepository;
+
+    // User submits claim
+    public ClaimResponse submitClaim(Claim claim) {
+        if (claim.getPolicyId() == null) {
+            throw new RuntimeException("Policy ID is required in the request");
+        }
+
+        Policy policy = policyRepository.findById(claim.getPolicyId())
+                .orElseThrow(() -> new RuntimeException("Policy Not Found With This ID"));
+
+        claim.setPolicy(policy);
+
+        claim.setStatus("Pending");
+        if (claim.getClaimDate() == null) {
+            claim.setClaimDate(LocalDate.now());
+        }
+
+        Claim savedClaim = claimRepository.save(claim);
+        return convertToResponse(savedClaim);
+    }
+
+    // Get All claims with FULL policy details
+    public List<ClaimResponse> getAllClaims() {
+        return claimRepository.findAllWithPolicy().stream()  // Java Streams for mapping
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<ClaimResponse> getClaimsByUser(Long userId) {
+        return claimRepository.findByUserId(userId).stream()  // Java Streams for mapping
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<ClaimResponse> getPendingClaims() {
+        return claimRepository.findByStatus("Pending").stream()  // Java Streams for mapping
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    private ClaimResponse convertToResponse(Claim claim) {
+        Policy p = claim.getPolicy();
+        return new ClaimResponse(
+                claim.getId(),
+                p.getId(),
+                p.getPlanName(),
+                p.getInsuredAmount(),
+                claim.getClaimType(),
+                claim.getClaimAmount(),
+                claim.getClaimDate(),
+                claim.getStatus(),
+                claim.getRemarks()
+        );
+    }
+
+    // Approver approves a claim
+    public String approveClaim(Long claimId, String remarks) {
+        if (claimId == null || claimId <= 0) {
+            throw new RuntimeException("Invalid Claim ID");
+        }
+
+        Claim claim = claimRepository.findById(claimId).orElseThrow(() -> new RuntimeException("Claim Not Found! " + claimId));
+
+        if (!"Pending".equals(claim.getStatus())) {
+            throw new RuntimeException("Claim NOT in the Pending Status! Current status: " + claim.getStatus());
+        }
+
+        claim.setStatus("Approved");
+        if (remarks != null && !remarks.trim().isEmpty()) {
+            claim.setRemarks(remarks);
+        }
+
+        claimRepository.save(claim);
+        return "Claim " + claimId + " Approved Successfully";
+    }
+
+    // Approver rejects a claim
+    public String rejectClaim(Long claimId, String remarks) {
+        if (claimId == null || claimId <= 0) {
+            throw new RuntimeException("Invalid Claim ID");
+        }
+
+        Claim claim = claimRepository.findById(claimId).orElseThrow(() -> new RuntimeException("Claim Not Found! " + claimId));
+
+        if (!"Pending".equals(claim.getStatus())) {
+            throw new RuntimeException("Claim Not in the Pending Status! Current status: " + claim.getStatus());
+        }
+
+        claim.setStatus("Rejected");
+        if (remarks != null && !remarks.trim().isEmpty()) {
+            claim.setRemarks(remarks);
+        }
+
+        claimRepository.save(claim);
+        return "Claim " + claimId + " has been Rejected!";
+    }
+}
+===========
+package com.example.policy.controller;
+
+import com.example.policy.entity.Claim;
+import com.example.policy.service.ClaimService;
+import com.example.policy.dto.ClaimResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/claims")
+public class ClaimController {
+
+    @Autowired
+    private ClaimService claimService;
+
+    @PostMapping("/submit")
+    public ClaimResponse submitClaim(@RequestBody Claim claim) {
+        try {
+            Claim savedClaim = claimService.submitClaim(claim);
+            return claimService.convertToResponse(savedClaim);
+        } catch (RuntimeException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    @GetMapping("/retrieve")
+    public List<ClaimResponse> getAllClaims() {
+        return claimService.getAllClaims();
+    }
+
+    @GetMapping("/my")
+    public List<ClaimResponse> getMyClaims(@RequestHeader("userId") Long userId) {
+        return claimService.getMyClaims(userId);
+    }
+
+    @GetMapping("/pending")
+    public List<ClaimResponse> getPendingClaims() {
+        return claimService.getPendingClaims();
+    }
+
+    @PutMapping("/{claimId}/approve")
+    public ResponseEntity<String> approveClaim(@PathVariable Long claimId, @RequestBody(required = false) Map<String, String> body) {
+        try {
+            String remarks = (body != null) ? body.get("remarks") : null;
+            String message = claimService.approveClaim(claimId, remarks);
+            return ResponseEntity.ok(message);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{claimId}/reject")
+    public ResponseEntity<String> rejectClaim(@PathVariable Long claimId, @RequestBody(required = false) Map<String, String> body) {
+        try {
+            String remarks = (body != null) ? body.get("remarks") : null;
+            String message = claimService.rejectClaim(claimId, remarks);
+            return ResponseEntity.ok(message);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error " + e.getMessage());
+        }
+    }
+}
+
