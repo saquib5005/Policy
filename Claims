@@ -222,3 +222,200 @@ public class ClaimService {
         return "Claim rejected";
     }
 }
+-------
+
+package com.example.policy.service;
+
+import com.example.policy.entity.Claim;
+import com.example.policy.dto.ClaimResponse;
+import com.example.policy.entity.Policy;
+import com.example.policy.repository.ClaimRepository;
+import com.example.policy.repository.PolicyRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class ClaimService {
+
+    @Autowired
+    private ClaimRepository claimRepository;
+
+    @Autowired
+    private PolicyRepository policyRepository;
+
+    // User submits claim
+    public Claim submitClaim(Claim claim) {
+        if (claim.getPolicyId() == null) {
+            throw new RuntimeException("Policy ID is required");
+        }
+
+        Policy policy = policyRepository.findById(claim.getPolicyId())
+                .orElseThrow(() -> new RuntimeException("Policy not found"));
+
+        claim.setClaimDate(LocalDate.now());
+        claim.setStatus("Pending");
+
+        return claimRepository.save(claim);
+    }
+
+    // Get all claims (for approver or read-only)
+    public List<ClaimResponse> getAllClaims() {
+        return claimRepository.findAll().stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());  // Java Streams for mapping to DTO
+    }
+
+    // Get my claims (for user)
+    public List<ClaimResponse> getMyClaims(Long userId) {
+        return claimRepository.findAll().stream()
+                .filter(claim -> claim.getPolicyId() != null && policyRepository.findById(claim.getPolicyId())
+                        .map(p -> p.getUserId().equals(userId)).orElse(false))
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());  // Java Streams for filtering by userId
+    }
+
+    // Get pending claims (for approver)
+    public List<ClaimResponse> getPendingClaims() {
+        return claimRepository.findAll().stream()
+                .filter(claim -> "Pending".equals(claim.getStatus()))
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());  // Java Streams for filtering pending
+    }
+
+    // Convert Claim to ClaimResponse DTO (with policy details)
+    private ClaimResponse convertToResponse(Claim claim) {
+        Policy p = policyRepository.findById(claim.getPolicyId()).orElse(null);
+        return new ClaimResponse(
+                claim.getClaimId(),
+                claim.getPolicyId(),
+                p != null ? p.getPlanName() : null,
+                p != null ? p.getInsuredAmount() : null,
+                claim.getClaimType(),
+                claim.getClaimAmount(),
+                claim.getClaimDate(),
+                claim.getStatus(),
+                claim.getRemarks()
+        );
+    }
+
+    // Approver approves claim
+    public String approveClaim(Long claimId, String remarks) {
+        Claim claim = claimRepository.findById(claimId)
+                .orElseThrow(() -> new RuntimeException("Claim not found"));
+
+        if (!"Pending".equals(claim.getStatus())) {
+            throw new RuntimeException("Claim is not pending");
+        }
+
+        claim.setStatus("Approved");
+        claim.setRemarks(remarks);
+        claimRepository.save(claim);
+        return "Claim approved";
+    }
+
+    // Approver rejects claim
+    public String rejectClaim(Long claimId, String remarks) {
+        Claim claim = claimRepository.findById(claimId)
+                .orElseThrow(() -> new RuntimeException("Claim not found"));
+
+        if (!"Pending".equals(claim.getStatus())) {
+            throw new RuntimeException("Claim is not pending");
+        }
+
+        claim.setStatus("Rejected");
+        claim.setRemarks(remarks);
+        claimRepository.save(claim);
+        return "Claim rejected";
+    }
+}
+-----------
+
+// ClaimResponse.java (DTO for response – uses streams in service for mapping)
+package com.example.policy.dto;
+
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+@Data
+public class ClaimResponse {
+
+    private Long claimId;
+    private Long policyId;
+    private String planName;
+    private BigDecimal insuredAmount;
+    private String claimType;
+    private BigDecimal claimAmount;
+    private LocalDate claimDate;
+    private String status;
+    private String remarks;
+
+}
+
+-------
+// ClaimController.java (REST endpoints for claim submission, view all/my/pending, approve/reject)
+package com.example.policy.controller;
+
+import com.example.policy.entity.Claim;
+import com.example.policy.service.ClaimService;
+import com.example.policy.dto.ClaimResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/claims")
+public class ClaimController {
+
+    @Autowired
+    private ClaimService claimService;
+
+    // User submits claim
+    @PostMapping("/submit")
+    public ClaimResponse submitClaim(@RequestBody Claim claim) {
+        return claimService.submitClaim(claim);
+    }
+
+    // Get all claims
+    @GetMapping("/retrieve")
+    public List<ClaimResponse> getAllClaims() {
+        return claimService.getAllClaims();
+    }
+
+    // User views their claims
+    @GetMapping("/my")
+    public List<ClaimResponse> getMyClaims(@RequestHeader("userId") Long userId) {
+        return claimService.getMyClaims(userId);
+    }
+
+    // Approver views pending claims
+    @GetMapping("/pending")
+    public List<ClaimResponse> getPendingClaims() {
+        return claimService.getPendingClaims();
+    }
+
+    // Approver approves claim
+    @PutMapping("/{claimId}/approve")
+    public ResponseEntity<String> approveClaim(@PathVariable Long claimId, @RequestBody(required = false) Map<String, String> body) {
+        String remarks = (body != null) ? body.get("remarks") : null;
+        String message = claimService.approveClaim(claimId, remarks);
+        return ResponseEntity.ok(message);
+    }
+
+    // Approver rejects claim
+    @PutMapping("/{claimId}/reject")
+    public ResponseEntity<String> rejectClaim(@PathVariable Long claimId, @RequestBody(required = false) Map<String, String> body) {
+        String remarks = (body != null) ? body.get("remarks") : null;
+        String message = claimService.rejectClaim(claimId, remarks);
+        return ResponseEntity.ok(message);
+    }
+}
+
