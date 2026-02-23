@@ -30,42 +30,77 @@ public class Claim {
 
 -------
 
-<changeSet id="002-plans" author="you">
-<createTable tableName="plans">
-<column name="plan_id" type="BIGINT" autoIncrement="true">
-<constraints primaryKey="true" nullable="false"/>
-</column>
-<column name="plan_name" type="VARCHAR(100)"/>
-<column name="plan_type" type="VARCHAR(50)"/>
-<column name="coverage_limit" type="DECIMAL(15,2)"/>
-</createTable>
+<!-- Claims Table -->
+<changeSet id="004-claims" author="you">
+    <createTable tableName="claims">
+        <column name="claim_id" type="BIGINT" autoIncrement="true">
+            <constraints primaryKey="true" nullable="false"/>
+        </column>
+        <column name="policy_id" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="claim_type" type="VARCHAR(50)"/>
+        <column name="claim_amount" type="DECIMAL(15,2)"/>
+        <column name="claim_date" type="DATE"/>
+        <column name="status" type="VARCHAR(20)"/>
+        <column name="remarks" type="VARCHAR(255)"/>
+    </createTable>
 </changeSet>
 
-----------
-<changeSet id="003-plans-data" author="you">
-<insert tableName="plans">
-<column name="plan_name" value="Life Secure Plus"/>
-<column name="plan_type" value="Life Insurance"/>
-<column name="coverage_limit" value="1500000"/>
-</insert>
-<insert tableName="plans">
-<column name="plan_name" value="Health Protect"/>
-<column name="plan_type" value="Health Insurance"/>
-<column name="coverage_limit" value="500000"/>
-</insert>
-<insert tableName="plans">
-<column name="plan_name" value="Property Guard"/>
-<column name="plan_type" value="Property Insurance"/>
-<column name="coverage_limit" value="1000000"/>
-</insert>
-<insert tableName="plans">
-<column name="plan_name" value="Motor Safe"/>
-<column name="plan_type" value="Motor Insurance"/>
-<column name="coverage_limit" value="750000"/>
-</insert>
-<insert tableName="plans">
-<column name="plan_name" value="Family Life Cover"/>
-<column name="plan_type" value="Life Insurance"/>
-<column name="coverage_limit" value="2000000"/>
-</insert>
+-------
+
+<!-- Hardcoded 5 claims -->
+<changeSet id="004-claims-data" author="you">
+    <!-- Claim 1: Pending (Health Insurance) -->
+    <insert tableName="claims">
+        <column name="policy_id" value="1"/>
+        <column name="claim_type" value="Health Insurance"/>
+        <column name="claim_amount" value="250000"/>
+        <column name="claim_date" value="2026-01-20"/>
+        <column name="status" value="Pending"/>
+        <column name="remarks" value="Hospitalization due to illness"/>
+    </insert>
+
+    <!-- Claim 2: Approved (Motor Insurance) -->
+    <insert tableName="claims">
+        <column name="policy_id" value="2"/>
+        <column name="claim_type" value="Motor Insurance"/>
+        <column name="claim_amount" value="800000"/>
+        <column name="claim_date" value="2026-02-05"/>
+        <column name="status" value="Approved"/>
+        <column name="remarks" value="Vehicle damage approved"/>
+    </insert>
+
+    <!-- Claim 3: Rejected (Property/Home Insurance) -->
+    <insert tableName="claims">
+        <column name="policy_id" value="3"/>
+        <column name="claim_type" value="Property/Home Insurance"/>
+        <column name="claim_amount" value="50000"/>
+        <column name="claim_date" value="2026-02-09"/>
+        <column name="status" value="Rejected"/>
+        <column name="remarks" value="Rejected due to invalid documents"/>
+    </insert>
+
+    <!-- Claim 4: Pending (Life Insurance) -->
+    <insert tableName="claims">
+        <column name="policy_id" value="4"/>
+        <column name="claim_type" value="Life Insurance"/>
+        <column name="claim_amount" value="120000"/>
+        <column name="claim_date" value="2026-02-15"/>
+        <column name="status" value="Pending"/>
+        <column name="remarks" value="Life claim pending review"/>
+    </insert>
+
+    <!-- Claim 5: Pending (Health Insurance) -->
+    <insert tableName="claims">
+        <column name="policy_id" value="5"/>
+        <column name="claim_type" value="Health Insurance"/>
+        <column name="claim_amount" value="95000"/>
+        <column name="claim_date" value="2026-02-18"/>
+        <column name="status" value="Pending"/>
+        <column name="remarks" value="Health claim for surgery"/>
+    </insert>
 </changeSet>
+
+
+
