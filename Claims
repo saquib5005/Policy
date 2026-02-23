@@ -782,4 +782,24 @@ public class ClaimController {
         }
     }
 }
+------
 
+package com.example.policy.repository;
+
+import com.example.policy.entity.Claim;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+
+public interface ClaimRepository extends JpaRepository<Claim, Long> {
+
+    @Query("SELECT c FROM Claim c JOIN FETCH c.policy p JOIN FETCH p.user u WHERE u.id = :userId")
+    List<Claim> findByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT c FROM Claim c JOIN FETCH c.policy")
+    List<Claim> findAllWithPolicy();
+
+    List<Claim> findByStatus(String status);
+}
